@@ -1,0 +1,244 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dashboard Inondations - Guinée</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      background-color: #1572A1;
+      padding: 20px;
+      color: white;
+    }
+    header img {
+      height: 80px;
+      margin-right: 20px;
+    }
+    header h1 {
+      flex-grow: 1;
+      text-align: center;
+      margin: 0;
+    }
+    form {
+      max-width: 1000px;
+      margin: 20px auto;
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+    }
+    form label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    form input, form select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+    }
+    .chart-container {
+      max-width: 1000px;
+      margin: 20px auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="https://via.placeholder.com/150x80?text=Logo+Entreprise" alt="Logo de l'entreprise" />
+    <h1>Gestion des Inondations - Guinée 2024</h1>
+  </header>
+
+  <form id="sinistresForm">
+    <label for="nom">Nom et Prénom</label>
+    <input type="text" id="nom" required />
+
+    <label for="age">Âge</label>
+    <input type="number" id="age" required />
+
+    <label for="contact">Contact</label>
+    <input type="text" id="contact" required />
+
+    <label for="prefecture">Préfecture</label>
+    <input type="text" id="prefecture" required />
+
+    <label for="quartier">Quartier</label>
+    <input type="text" id="quartier" required />
+
+    <label for="secteur">Secteur</label>
+    <input type="text" id="secteur" required />
+
+    <label for="sexe">Sexe</label>
+    <select id="sexe" required>
+      <option value="">-- Choisir --</option>
+      <option value="Homme">Homme</option>
+      <option value="Femme">Femme</option>
+    </select>
+
+    <label for="femmeEnceinte">Femme enceinte ?</label>
+    <select id="femmeEnceinte" disabled>
+      <option value="">-- Choisir --</option>
+      <option value="Oui">Oui</option>
+      <option value="Non">Non</option>
+    </select>
+
+    <label for="moisGrossesse">Nombre de mois de grossesse</label>
+    <input type="number" id="moisGrossesse" disabled />
+
+    <label for="suiviPrenatal">Suivi prénatal en cours</label>
+    <select id="suiviPrenatal" disabled>
+      <option value="">-- Choisir --</option>
+      <option value="Oui">Oui</option>
+      <option value="Non">Non</option>
+    </select>
+
+    <label for="centreSante">Centre de santé fréquenté</label>
+    <input type="text" id="centreSante" disabled />
+
+    <label for="gravite">Gravité</label>
+    <select id="gravite" required>
+      <option value="">-- Choisir --</option>
+      <option value="Faible">Faible</option>
+      <option value="Moyenne">Moyenne</option>
+      <option value="Élevée">Élevée</option>
+    </select>
+
+    <label for="deplace">Déplacé ?</label>
+    <select id="deplace" required>
+      <option value="">-- Choisir --</option>
+      <option value="Oui">Oui</option>
+      <option value="Non">Non</option>
+    </select>
+
+    <label for="abri">A-t-il un abri sûr ?</label>
+    <select id="abri" required>
+      <option value="">-- Choisir --</option>
+      <option value="Oui">Oui</option>
+      <option value="Non">Non</option>
+    </select>
+
+    <label for="kits">Accès aux kits ?</label>
+    <select id="kits" required>
+      <option value="">-- Choisir --</option>
+      <option value="Oui">Oui</option>
+      <option value="Non">Non</option>
+    </select>
+
+    <label for="mort">Est-il mort ?</label>
+    <select id="mort" required>
+      <option value="">-- Choisir --</option>
+      <option value="Oui">Oui</option>
+      <option value="Non">Non</option>
+    </select>
+
+    <label for="blesse">Est-il blessé ?</label>
+    <select id="blesse" required>
+      <option value="">-- Choisir --</option>
+      <option value="Oui">Oui</option>
+      <option value="Non">Non</option>
+    </select>
+
+    <button type="submit" style="margin-top:20px;">Soumettre</button>
+  </form>
+
+  <div class="chart-container">
+    <h2 style="text-align:center">Gravité par Quartier</h2>
+    <canvas id="dynamicChart"></canvas>
+  </div>
+
+  <script>
+    const sinistresData = [];
+    const ctxDynamic = document.getElementById('dynamicChart').getContext('2d');
+    const graviteColors = {
+      'Faible': 'rgba(0, 128, 0, 0.7)',
+      'Moyenne': 'rgba(255, 165, 0, 0.7)',
+      'Élevée': 'rgba(255, 0, 0, 0.7)'
+    };
+
+    let dynamicChart = new Chart(ctxDynamic, {
+      type: 'bar',
+      data: {
+        labels: [],
+        datasets: [
+          { label: 'Faible', data: [], backgroundColor: graviteColors['Faible'] },
+          { label: 'Moyenne', data: [], backgroundColor: graviteColors['Moyenne'] },
+          { label: 'Élevée', data: [], backgroundColor: graviteColors['Élevée'] },
+        ]
+      },
+      options: {
+        responsive: true,
+        scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } }
+      }
+    });
+
+    function updateChart() {
+      const grouped = {};
+      sinistresData.forEach(item => {
+        const q = item.quartier, g = item.gravite;
+        if (!grouped[q]) grouped[q] = { 'Faible': 0, 'Moyenne': 0, 'Élevée': 0 };
+        if (g in grouped[q]) grouped[q][g]++;
+      });
+      const quartiers = Object.keys(grouped);
+      dynamicChart.data.labels = quartiers;
+      dynamicChart.data.datasets.forEach(ds => {
+        ds.data = quartiers.map(q => grouped[q][ds.label] || 0);
+      });
+      dynamicChart.update();
+    }
+
+    function updateGrossesseFields() {
+      const sexe = document.getElementById('sexe').value;
+      const femmeEnceinte = document.getElementById('femmeEnceinte');
+      const moisGrossesse = document.getElementById('moisGrossesse');
+      const suiviPrenatal = document.getElementById('suiviPrenatal');
+      const centreSante = document.getElementById('centreSante');
+
+      if (sexe === "Femme") {
+        femmeEnceinte.disabled = false;
+        if (femmeEnceinte.value === "Oui") {
+          moisGrossesse.disabled = false;
+          suiviPrenatal.disabled = false;
+        } else {
+          moisGrossesse.disabled = true;
+          suiviPrenatal.disabled = true;
+        }
+        centreSante.disabled = false;
+      } else {
+        femmeEnceinte.disabled = true;
+        moisGrossesse.disabled = true;
+        suiviPrenatal.disabled = true;
+        centreSante.disabled = false;
+        femmeEnceinte.value = '';
+        moisGrossesse.value = '';
+        suiviPrenatal.value = '';
+        centreSante.value = '';
+      }
+    }
+
+    document.getElementById('sexe').addEventListener('change', updateGrossesseFields);
+    document.getElementById('femmeEnceinte').addEventListener('change', updateGrossesseFields);
+
+    document.getElementById('sinistresForm').addEventListener('submit', function(event) {
+      event.preventDefault();
+      const quartier = document.getElementById('quartier').value.trim();
+      const gravite = document.getElementById('gravite').value;
+      if (!quartier || !gravite) return alert('Remplissez tous les champs.');
+      sinistresData.push({ quartier, gravite });
+      updateChart();
+      this.reset();
+      updateGrossesseFields();
+    });
+  </script>
+</body>
+</html>
